@@ -180,31 +180,58 @@ const countAppliedFilters = (filters: ProductFilters) =>
   (filters.freeShipping ? 1 : 0) +
   (filters.onSale ? 1 : 0);
 
+const getCursorOffset = (cursor: string | undefined) => {
+  if (!cursor) {
+    return 0;
+  }
+
+  const offset = Number(cursor);
+  return Number.isInteger(offset) && offset >= 0 ? offset : 0;
+};
+
 export const searchProducts = (request: SearchRequest): SearchResponse => {
   const startedAt = performance.now();
   const filteredProducts = products.filter((product) =>
     matchesFilters(product, request.filters),
   );
   const sortedProducts = sortProducts(filteredProducts, request);
+  const pageSize = request.mode === "infinite" ? request.limit : request.pageSize;
   const pageCount = Math.max(
     1,
-    Math.ceil(sortedProducts.length / request.pageSize),
+    Math.ceil(sortedProducts.length / pageSize),
   );
-  const normalizedPage = Math.min(Math.max(request.page, 1), pageCount);
-  const start = (normalizedPage - 1) * request.pageSize;
-  const end = start + request.pageSize;
+  const cursorStart = Math.min(
+    getCursorOffset(request.cursor),
+    Math.max(0, sortedProducts.length),
+  );
+  const requestedStart =
+    request.mode === "infinite"
+      ? cursorStart
+      : (Math.min(Math.max(request.page, 1), pageCount) - 1) * pageSize;
+  const start = Math.min(requestedStart, Math.max(0, sortedProducts.length));
+  const end = start + pageSize;
   const visibleProducts = sortedProducts.slice(start, end);
   const hasNextPage = end < sortedProducts.length;
+  const normalizedPage =
+    request.mode === "infinite"
+      ? Math.floor(start / pageSize) + 1
+      : Math.min(Math.max(request.page, 1), pageCount);
+  const normalizedCursor =
+    request.mode === "infinite" && start > 0 ? String(start) : undefined;
 
   return {
     products: visibleProducts,
     total: sortedProducts.length,
     page: normalizedPage,
     pageSize: request.pageSize,
+    cursor: normalizedCursor,
+    limit: pageSize,
+    rangeStart: visibleProducts.length === 0 ? 0 : start + 1,
+    rangeEnd: Math.min(end, sortedProducts.length),
     pageCount,
     mode: request.mode,
     hasNextPage,
-    nextCursor: hasNextPage ? String(normalizedPage + 1) : undefined,
+    nextCursor: hasNextPage ? String(end) : undefined,
     facets: buildFacets(filteredProducts),
     appliedFilterCount: countAppliedFilters(request.filters),
     queryTimeMs: Math.max(8, Math.round(performance.now() - startedAt + 18)),

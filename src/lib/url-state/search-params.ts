@@ -49,6 +49,11 @@ const toPositiveInteger = (value: string | undefined, fallback: number) => {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const toCursor = (value: string | undefined) => {
+  const cursor = value?.trim();
+  return cursor ? cursor : undefined;
+};
+
 const toBoolean = (value: string | undefined) => value === "true";
 
 export const parseSearchParams = (
@@ -56,6 +61,8 @@ export const parseSearchParams = (
 ): SearchRequest => {
   const sort = getFirst(searchParams.sort);
   const mode = getFirst(searchParams.mode);
+  const pageSize = toPositiveInteger(getFirst(searchParams.pageSize), 8);
+  const limit = toPositiveInteger(getFirst(searchParams.limit), pageSize);
 
   return {
     filters: {
@@ -78,33 +85,52 @@ export const parseSearchParams = (
         ? (sort as SortOption)
         : "relevance",
     page: toPositiveInteger(getFirst(searchParams.page), 1),
-    pageSize: toPositiveInteger(getFirst(searchParams.pageSize), 8),
+    pageSize,
+    cursor: toCursor(getFirst(searchParams.cursor)),
+    limit,
     mode: mode === "infinite" ? "infinite" : "fixed",
   };
 };
 
+type SearchHrefUpdates = Partial<{
+  q: string;
+  sort: SortOption;
+  page: number;
+  mode: BrowsingMode;
+  pageSize: number;
+  cursor: string | undefined;
+  limit: number | undefined;
+}>;
+
+const hasUpdate = <Key extends keyof SearchHrefUpdates>(
+  updates: SearchHrefUpdates,
+  key: Key,
+) => Object.prototype.hasOwnProperty.call(updates, key);
+
 export const createSearchHref = (
   request: SearchRequest,
-  updates: Partial<{
-    q: string;
-    sort: SortOption;
-    page: number;
-    mode: BrowsingMode;
-    pageSize: number;
-  }>,
+  updates: SearchHrefUpdates,
 ) => {
   const params = new URLSearchParams();
-  const query = updates.q ?? request.filters.query;
+  const query = hasUpdate(updates, "q")
+    ? (updates.q ?? "")
+    : request.filters.query;
   const sort = updates.sort ?? request.sort;
   const page = updates.page ?? request.page;
   const mode = updates.mode ?? request.mode;
   const pageSize = updates.pageSize ?? request.pageSize;
+  const cursor = hasUpdate(updates, "cursor")
+    ? updates.cursor
+    : request.cursor;
+  const limit = updates.limit ?? request.limit;
 
   if (query) params.set("q", query);
   if (sort !== "relevance") params.set("sort", sort);
   if (page > 1) params.set("page", String(page));
   if (mode !== "fixed") params.set("mode", mode);
   if (pageSize !== 8) params.set("pageSize", String(pageSize));
+  if (mode === "infinite" && cursor) params.set("cursor", cursor);
+  if (mode === "infinite" && limit !== 8) params.set("limit", String(limit));
 
   for (const category of request.filters.categories) {
     params.append("category", category);
@@ -147,7 +173,7 @@ export const createClearFiltersHref = (request: SearchRequest) =>
       },
       page: 1,
     },
-    { page: 1 },
+    { page: 1, cursor: undefined },
   );
 
 export const createClearSearchHref = (request: SearchRequest) =>
@@ -160,7 +186,7 @@ export const createClearSearchHref = (request: SearchRequest) =>
       },
       page: 1,
     },
-    { q: "", page: 1 },
+    { q: "", page: 1, cursor: undefined },
   );
 
 export const createResetSearchHref = () => "/";

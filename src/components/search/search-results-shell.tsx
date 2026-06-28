@@ -148,6 +148,9 @@ function SearchForm({ request }: { request: SearchRequest }) {
       <input type="hidden" name="sort" value={request.sort} />
       <input type="hidden" name="mode" value={request.mode} />
       <input type="hidden" name="pageSize" value={request.pageSize} />
+      {request.mode === "infinite" && (
+        <input type="hidden" name="limit" value={request.limit} />
+      )}
       <PreservedFilterFields request={request} />
       <button
         type="submit"
@@ -180,6 +183,9 @@ function FilterFormContent({
       <input type="hidden" name="sort" value={request.sort} />
       <input type="hidden" name="mode" value={request.mode} />
       <input type="hidden" name="pageSize" value={request.pageSize} />
+      {request.mode === "infinite" && (
+        <input type="hidden" name="limit" value={request.limit} />
+      )}
 
       <fieldset className="space-y-3">
         <legend className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -396,6 +402,7 @@ function ModeSwitch({ request }: { request: SearchRequest }) {
           href={createSearchHref(request, {
             mode,
             page: 1,
+            cursor: undefined,
           })}
           className={`px-3 py-2 text-xs font-semibold transition ${
             request.mode === mode
@@ -417,8 +424,8 @@ function ResultsHeader({
   request: SearchRequest;
   response: SearchResponse;
 }) {
-  const start = response.total === 0 ? 0 : (response.page - 1) * response.pageSize + 1;
-  const end = Math.min(response.page * response.pageSize, response.total);
+  const start = response.rangeStart;
+  const end = response.rangeEnd;
   const appliedFilters = getAppliedFilters(request);
   const hasQuery = Boolean(request.filters.query);
 
@@ -457,7 +464,11 @@ function ResultsHeader({
               {popularSearches.map((query) => (
                 <Link
                   key={query}
-                  href={createSearchHref(request, { q: query, page: 1 })}
+                  href={createSearchHref(request, {
+                    q: query,
+                    page: 1,
+                    cursor: undefined,
+                  })}
                   className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-[#2874f0] hover:text-[#2874f0]"
                 >
                   {query}
@@ -477,6 +488,7 @@ function ResultsHeader({
               href={createSearchHref(request, {
                 sort: value as SortOption,
                 page: 1,
+                cursor: undefined,
               })}
               className={`border-b-2 px-2 py-1 text-sm font-medium transition ${
                 request.sort === value
@@ -609,14 +621,17 @@ function ResultsPagination({
     return (
       <div className="border-t border-zinc-100 bg-white p-5 text-center">
         <p className="text-sm font-medium text-zinc-700">
-          Batch {response.page} · Showing {response.products.length} of{" "}
-          {response.total} products
+          Batch {response.page} · Showing {response.rangeStart}-
+          {response.rangeEnd} of {response.total} products
         </p>
         {response.hasNextPage ? (
           <Link
             href={createSearchHref(request, {
               page: response.page + 1,
+              cursor: response.nextCursor,
+              limit: response.limit,
             })}
+            aria-label={`Load the next ${response.limit} products`}
             className="mt-3 inline-flex h-10 items-center rounded-sm bg-[#2874f0] px-5 text-sm font-semibold text-white transition hover:bg-[#1f5fc5]"
           >
             Load next batch

@@ -14,6 +14,7 @@ Implemented in this foundation milestone:
 - Dummy product image assets in `public/product-images`.
 - Typed product, filter, sort, browsing-mode, facet, request, and response contracts.
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
+- Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
 - Marketplace-style ecommerce search results screen with:
   - Blue utility header with prominent search.
@@ -44,6 +45,9 @@ public/
   product-images/
 src/
   app/
+    api/
+      products/
+        route.ts
     layout.tsx
     page.tsx
     globals.css
@@ -69,6 +73,7 @@ The current backend is intentionally mocked, but it behaves like an API contract
 
 - `src/data/products.ts` owns product fixtures.
 - `src/lib/products/search.ts` owns keyword matching, synonym expansion, filtering, sorting, facet generation, pagination, and response metadata.
+- `src/app/api/products/route.ts` exposes the same typed search contract through a mock API endpoint for future client-side infinite loading.
 - UI components receive request/response objects and do not own product search logic.
 
 ## Local Development
@@ -112,6 +117,6 @@ Tests are not present yet, so this README does not claim test coverage.
 The main showcase feature is the browsing-mode decision:
 
 - Fixed view: explicit pagination with a controlled number of visible products.
-- Infinite feed: cursor-style browsing for discovery-heavy product exploration.
+- Infinite feed: cursor-style loading for discovery-heavy product exploration.
 
-Future work will make this contrast fully interactive with responsive page-size rules and true infinite scrolling.
+Future work will connect the cursor contract to an `IntersectionObserver` client component, then add responsive page-size rules for fixed view.

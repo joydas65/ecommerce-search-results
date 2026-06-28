@@ -67,6 +67,8 @@ export interface SearchRequest {
   sort: SortOption;
   page: number;
   pageSize: number;
+  cursor?: string;
+  limit: number;
   mode: BrowsingMode;
 }
 
@@ -82,6 +84,10 @@ export interface SearchResponse {
   total: number;
   page: number;
   pageSize: number;
+  cursor?: string;
+  limit: number;
+  rangeStart: number;
+  rangeEnd: number;
   pageCount: number;
   mode: BrowsingMode;
   hasNextPage: boolean;
