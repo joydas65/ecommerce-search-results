@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BrowseLab Ecommerce Search Results
 
-## Getting Started
+BrowseLab is a portfolio-focused ecommerce search results experience built with Next.js, TypeScript, Tailwind CSS, local dummy product images, and mock backend data.
 
-First, run the development server:
+The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive result rows, pagination-oriented browsing, and a clear path toward infinite scrolling.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Current Status
+
+Implemented in this foundation milestone:
+
+- Next.js App Router project with TypeScript and Tailwind CSS.
+- Project-specific metadata and visual system.
+- Mock product fixtures in a dedicated data module.
+- Dummy product image assets in `public/product-images`.
+- Typed product, filter, sort, browsing-mode, facet, request, and response contracts.
+- Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
+- URL search-param parsing for query, sort, page, page size, mode, and filters.
+- Marketplace-style ecommerce search results screen with:
+  - Blue utility header with prominent search.
+  - Desktop filter panel.
+  - Mobile collapsible filter section.
+  - Sort controls.
+  - Fixed view and infinite feed mode switch.
+  - Product result rows with images, ratings, pricing, delivery cues, and offers.
+  - Applied filter chips.
+  - Empty state with separate clear-search, clear-filter, and view-all recovery actions.
+  - Pagination and next-batch controls.
+  - Quick-view modal.
+  - Local-storage wishlist toggle.
+
+Not implemented yet:
+
+- Client-side debounced search.
+- True infinite scroll observer behavior.
+- Device-derived fixed page size.
+- Compare drawer.
+- Unit tests and Playwright tests.
+- Deployment configuration.
+
+## Architecture
+
+```txt
+public/
+  product-images/
+src/
+  app/
+    layout.tsx
+    page.tsx
+    globals.css
+  components/
+    search/
+      search-results-shell.tsx
+  data/
+    products.ts
+  lib/
+    products/
+      search.ts
+    url-state/
+      search-params.ts
+  types/
+    product.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The UI consumes a typed `SearchResponse` rather than reading product arrays directly. This keeps the mock data behind a backend-like boundary and makes it easier to replace the local service with a real API later.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mock Backend Strategy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The current backend is intentionally mocked, but it behaves like an API contract:
 
-## Learn More
+- `src/data/products.ts` owns product fixtures.
+- `src/lib/products/search.ts` owns keyword matching, synonym expansion, filtering, sorting, facet generation, pagination, and response metadata.
+- UI components receive request/response objects and do not own product search logic.
 
-To learn more about Next.js, take a look at the following resources:
+## Local Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use Node.js 20 or newer. On this machine:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+source ~/nvm/bin/nvm.sh && nvm use v20
+npm run dev
+```
 
-## Deploy on Vercel
+Open `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Verification
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Current verified commands:
+
+```bash
+source ~/nvm/bin/nvm.sh && nvm use v20
+npm run lint
+npm run build
+```
+
+The initial scaffold needed `npm install --registry=https://registry.npmjs.org` to restore Tailwind optional native packages required for production builds.
+
+## Quality Standard
+
+Every milestone should include a consistency audit across:
+
+- README claims.
+- Source comments.
+- Test names and fixtures.
+- Mock backend data shape.
+- Search response metadata.
+- UX behavior described in documentation.
+
+Tests are not present yet, so this README does not claim test coverage.
+
+## Portfolio Framing
+
+The main showcase feature is the browsing-mode decision:
+
+- Fixed view: explicit pagination with a controlled number of visible products.
+- Infinite feed: cursor-style browsing for discovery-heavy product exploration.
+
+Future work will make this contrast fully interactive with responsive page-size rules and true infinite scrolling.
