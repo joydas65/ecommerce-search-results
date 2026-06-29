@@ -15,6 +15,7 @@ Implemented in this foundation milestone:
 - Typed product, filter, sort, browsing-mode, facet, request, and response contracts.
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
+- Product detail pages at `/products/[id]` with return-to-results navigation, product imagery, offers, highlights, actions, and related results.
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
 - URL-driven fixed pagination with shareable page numbers, visible page context, and page-size controls.
 - Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
@@ -32,7 +33,7 @@ Implemented in this foundation milestone:
   - Fixed pagination with URL-backed per-page controls.
   - Infinite loading controls.
   - Skeleton shell for search/page transitions and skeleton rows while more products load.
-  - Quick-view modal.
+  - Product detail navigation from each result row.
   - Local-storage wishlist toggle.
 
 Not implemented yet:
@@ -50,14 +51,22 @@ public/
   product-images/
 src/
   app/
+    (search)/
+      loading.tsx
+      page.tsx
     api/
       products/
         route.ts
-    loading.tsx
+    products/
+      [id]/
+        loading.tsx
+        not-found.tsx
+        page.tsx
     layout.tsx
-    page.tsx
     globals.css
   components/
+    product/
+      product-detail-actions.tsx
     search/
       infinite-results-client.tsx
       product-actions.tsx
@@ -68,6 +77,7 @@ src/
     products.ts
   lib/
     products/
+      catalog.ts
       search.ts
     url-state/
       search-params.ts
@@ -84,6 +94,7 @@ The UI consumes a typed `SearchResponse` rather than reading product arrays dire
 The current backend is intentionally mocked, but it behaves like an API contract:
 
 - `src/data/products.ts` owns product fixtures.
+- `src/lib/products/catalog.ts` owns product-detail lookup and related-product selection.
 - `src/lib/products/search.ts` owns keyword matching, synonym expansion, filtering, sorting, facet generation, pagination, and response metadata.
 - `src/app/api/products/route.ts` exposes the same typed search contract through a mock API endpoint for client-side infinite loading.
 - UI components receive request/response objects and do not own product search logic.

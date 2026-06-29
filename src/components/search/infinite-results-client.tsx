@@ -12,6 +12,7 @@ import {
 interface InfiniteResultsClientProps {
   request: SearchRequest;
   initialResponse: SearchResponse;
+  returnToHref: string;
 }
 
 const toProductsApiHref = (
@@ -40,6 +41,7 @@ const appendUniqueProducts = (current: Product[], incoming: Product[]) => {
 export function InfiniteResultsClient({
   request,
   initialResponse,
+  returnToHref,
 }: InfiniteResultsClientProps) {
   const [products, setProducts] = useState(initialResponse.products);
   const [latestResponse, setLatestResponse] = useState(initialResponse);
@@ -107,6 +109,7 @@ export function InfiniteResultsClient({
             key={product.id}
             product={product}
             imagePriority={index === 0 && latestResponse.cursor === undefined}
+            returnToHref={returnToHref}
           />
         ))}
       </div>

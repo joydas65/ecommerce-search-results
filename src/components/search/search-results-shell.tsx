@@ -606,6 +606,7 @@ export function SearchResultsShell({
   request,
   response,
 }: SearchResultsShellProps) {
+  const currentResultsHref = createSearchHref(request, {});
   const hasQuery = Boolean(request.filters.query);
   const hasAppliedFilters = response.appliedFilterCount > 0;
   const emptyStateActions = [
@@ -646,9 +647,10 @@ export function SearchResultsShell({
           {response.products.length > 0 ? (
             response.mode === "infinite" ? (
               <InfiniteResultsClient
-                key={createSearchHref(request, {})}
+                key={currentResultsHref}
                 request={request}
                 initialResponse={response}
+                returnToHref={currentResultsHref}
               />
             ) : (
               <div>
@@ -657,6 +659,7 @@ export function SearchResultsShell({
                     key={product.id}
                     product={product}
                     imagePriority={index === 0 && response.page === 1}
+                    returnToHref={currentResultsHref}
                   />
                 ))}
               </div>

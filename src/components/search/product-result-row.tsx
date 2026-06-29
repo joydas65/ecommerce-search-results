@@ -22,9 +22,11 @@ const getDiscount = (product: Product) => {
 export function ProductResultRow({
   product,
   imagePriority = false,
+  returnToHref,
 }: {
   product: Product;
   imagePriority?: boolean;
+  returnToHref?: string;
 }) {
   const discount = getDiscount(product);
   const imageLoadingProps = imagePriority
@@ -113,7 +115,14 @@ export function ProductResultRow({
           <p className="text-xs text-zinc-500">Bank offer available</p>
         </div>
         <div className="w-full md:w-[190px]">
-          <ProductActions product={product} />
+          <ProductActions
+            product={product}
+            detailsHref={
+              returnToHref
+                ? `/products/${product.id}?returnTo=${encodeURIComponent(returnToHref)}`
+                : undefined
+            }
+          />
         </div>
       </div>
     </article>
