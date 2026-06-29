@@ -43,6 +43,7 @@ const modeLabels: Record<BrowsingMode, string> = {
 };
 
 const popularSearches = ["mobile", "headphones", "shoes", "backpack"];
+const fixedPageSizeOptions = [4, 8, 12];
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -517,43 +518,87 @@ function ResultsPagination({
   const pages = Array.from({ length: response.pageCount }, (_, index) => index + 1);
 
   return (
-    <nav
-      aria-label="Product results pages"
-      className="flex flex-wrap items-center justify-center gap-2 border-t border-zinc-100 bg-white p-5"
-    >
-      <Link
-        href={createSearchHref(request, {
-          page: Math.max(1, response.page - 1),
-        })}
-        aria-disabled={response.page === 1}
-        className="rounded-sm border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-[#2874f0] hover:text-[#2874f0] aria-disabled:pointer-events-none aria-disabled:opacity-40"
-      >
-        Previous
-      </Link>
-      {pages.map((page) => (
-        <Link
-          key={page}
-          href={createSearchHref(request, { page })}
-          aria-current={response.page === page ? "page" : undefined}
-          className={`min-w-10 rounded-sm border px-3 py-2 text-center text-sm font-semibold transition ${
-            response.page === page
-              ? "border-[#2874f0] bg-[#2874f0] text-white"
-              : "border-zinc-200 text-zinc-700 hover:border-[#2874f0] hover:text-[#2874f0]"
-          }`}
+    <div className="border-t border-zinc-100 bg-white p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-zinc-950">
+            Page {response.page} of {response.pageCount}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Showing {response.rangeStart}-{response.rangeEnd} of{" "}
+            {response.total} products
+          </p>
+        </div>
+
+        <div
+          className="flex flex-wrap items-center gap-2"
+          aria-label="Products per page"
         >
-          {page}
-        </Link>
-      ))}
-      <Link
-        href={createSearchHref(request, {
-          page: Math.min(response.pageCount, response.page + 1),
-        })}
-        aria-disabled={response.page === response.pageCount}
-        className="rounded-sm border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-[#2874f0] hover:text-[#2874f0] aria-disabled:pointer-events-none aria-disabled:opacity-40"
+          <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Per page
+          </span>
+          {fixedPageSizeOptions.map((pageSize) => (
+            <Link
+              key={pageSize}
+              href={createSearchHref(request, {
+                page: 1,
+                pageSize,
+                cursor: undefined,
+                limit: undefined,
+              })}
+              aria-current={response.pageSize === pageSize ? "true" : undefined}
+              className={`min-w-10 rounded-sm border px-3 py-2 text-center text-xs font-semibold transition ${
+                response.pageSize === pageSize
+                  ? "border-[#2874f0] bg-[#eff6ff] text-[#2874f0]"
+                  : "border-zinc-200 text-zinc-700 hover:border-[#2874f0] hover:text-[#2874f0]"
+              }`}
+            >
+              {pageSize}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <nav
+        aria-label="Product results pages"
+        className="mt-5 flex flex-wrap items-center justify-center gap-2"
       >
-        Next
-      </Link>
-    </nav>
+        <Link
+          href={createSearchHref(request, {
+            page: Math.max(1, response.page - 1),
+            cursor: undefined,
+          })}
+          aria-disabled={response.page === 1}
+          className="rounded-sm border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-[#2874f0] hover:text-[#2874f0] aria-disabled:pointer-events-none aria-disabled:opacity-40"
+        >
+          Previous
+        </Link>
+        {pages.map((page) => (
+          <Link
+            key={page}
+            href={createSearchHref(request, { page, cursor: undefined })}
+            aria-current={response.page === page ? "page" : undefined}
+            className={`min-w-10 rounded-sm border px-3 py-2 text-center text-sm font-semibold transition ${
+              response.page === page
+                ? "border-[#2874f0] bg-[#2874f0] text-white"
+                : "border-zinc-200 text-zinc-700 hover:border-[#2874f0] hover:text-[#2874f0]"
+            }`}
+          >
+            {page}
+          </Link>
+        ))}
+        <Link
+          href={createSearchHref(request, {
+            page: Math.min(response.pageCount, response.page + 1),
+            cursor: undefined,
+          })}
+          aria-disabled={response.page === response.pageCount}
+          className="rounded-sm border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-[#2874f0] hover:text-[#2874f0] aria-disabled:pointer-events-none aria-disabled:opacity-40"
+        >
+          Next
+        </Link>
+      </nav>
+    </div>
   );
 }
 

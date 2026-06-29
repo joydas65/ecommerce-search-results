@@ -16,6 +16,7 @@ Implemented in this foundation milestone:
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
+- URL-driven fixed pagination with shareable page numbers, visible page context, and page-size controls.
 - Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
 - Lazy product image loading through `next/image`, with priority reserved for the first visible row.
 - Stable product-row layout with intrinsic row sizing, offscreen rendering optimization, and skeleton rows for route transitions and incremental batches.
@@ -28,7 +29,8 @@ Implemented in this foundation milestone:
   - Product result rows with images, ratings, pricing, delivery cues, and offers.
   - Applied filter chips.
   - Empty state with separate clear-search, clear-filter, and view-all recovery actions.
-  - Fixed pagination and infinite loading controls.
+  - Fixed pagination with URL-backed per-page controls.
+  - Infinite loading controls.
   - Skeleton shell for search/page transitions and skeleton rows while more products load.
   - Quick-view modal.
   - Local-storage wishlist toggle.
@@ -126,7 +128,7 @@ Tests are not present yet, so this README does not claim test coverage.
 
 The main showcase feature is the browsing-mode decision:
 
-- Fixed view: explicit pagination with a controlled number of visible products.
+- Fixed view: explicit URL-addressable pagination with a controlled number of visible products and per-page controls.
 - Infinite feed: observer-driven cursor loading for discovery-heavy product exploration, with a manual fallback for accessibility and resilience.
 
 Future work will add responsive page-size rules for fixed view, then protect both browsing modes with unit and Playwright coverage.
