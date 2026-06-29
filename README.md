@@ -2,7 +2,7 @@
 
 BrowseLab is a portfolio-focused ecommerce search results experience built with Next.js, TypeScript, Tailwind CSS, local dummy product images, and mock backend data.
 
-The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive result rows, pagination-oriented browsing, and a clear path toward infinite scrolling.
+The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive result rows, fixed pagination, and observer-driven infinite browsing.
 
 ## Current Status
 
@@ -16,6 +16,8 @@ Implemented in this foundation milestone:
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
+- Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
+- Lazy product image loading through `next/image`, with priority reserved for the first visible row.
 - Marketplace-style ecommerce search results screen with:
   - Blue utility header with prominent search.
   - Desktop filter panel.
@@ -25,14 +27,14 @@ Implemented in this foundation milestone:
   - Product result rows with images, ratings, pricing, delivery cues, and offers.
   - Applied filter chips.
   - Empty state with separate clear-search, clear-filter, and view-all recovery actions.
-  - Pagination and next-batch controls.
+  - Fixed pagination and infinite loading controls.
+  - Skeleton rows while more products load.
   - Quick-view modal.
   - Local-storage wishlist toggle.
 
 Not implemented yet:
 
 - Client-side debounced search.
-- True infinite scroll observer behavior.
 - Device-derived fixed page size.
 - Compare drawer.
 - Unit tests and Playwright tests.
@@ -53,6 +55,9 @@ src/
     globals.css
   components/
     search/
+      infinite-results-client.tsx
+      product-actions.tsx
+      product-result-row.tsx
       search-results-shell.tsx
   data/
     products.ts
@@ -61,6 +66,8 @@ src/
       search.ts
     url-state/
       search-params.ts
+  hooks/
+    use-intersection-observer.ts
   types/
     product.ts
 ```
@@ -73,7 +80,7 @@ The current backend is intentionally mocked, but it behaves like an API contract
 
 - `src/data/products.ts` owns product fixtures.
 - `src/lib/products/search.ts` owns keyword matching, synonym expansion, filtering, sorting, facet generation, pagination, and response metadata.
-- `src/app/api/products/route.ts` exposes the same typed search contract through a mock API endpoint for future client-side infinite loading.
+- `src/app/api/products/route.ts` exposes the same typed search contract through a mock API endpoint for client-side infinite loading.
 - UI components receive request/response objects and do not own product search logic.
 
 ## Local Development
@@ -117,6 +124,6 @@ Tests are not present yet, so this README does not claim test coverage.
 The main showcase feature is the browsing-mode decision:
 
 - Fixed view: explicit pagination with a controlled number of visible products.
-- Infinite feed: cursor-style loading for discovery-heavy product exploration.
+- Infinite feed: observer-driven cursor loading for discovery-heavy product exploration, with a manual fallback for accessibility and resilience.
 
-Future work will connect the cursor contract to an `IntersectionObserver` client component, then add responsive page-size rules for fixed view.
+Future work will add responsive page-size rules for fixed view, then protect both browsing modes with unit and Playwright coverage.
