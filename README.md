@@ -18,6 +18,7 @@ Implemented in this foundation milestone:
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
 - Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
 - Lazy product image loading through `next/image`, with priority reserved for the first visible row.
+- Stable product-row layout with intrinsic row sizing, offscreen rendering optimization, and skeleton rows for route transitions and incremental batches.
 - Marketplace-style ecommerce search results screen with:
   - Blue utility header with prominent search.
   - Desktop filter panel.
@@ -28,7 +29,7 @@ Implemented in this foundation milestone:
   - Applied filter chips.
   - Empty state with separate clear-search, clear-filter, and view-all recovery actions.
   - Fixed pagination and infinite loading controls.
-  - Skeleton rows while more products load.
+  - Skeleton shell for search/page transitions and skeleton rows while more products load.
   - Quick-view modal.
   - Local-storage wishlist toggle.
 
@@ -50,6 +51,7 @@ src/
     api/
       products/
         route.ts
+    loading.tsx
     layout.tsx
     page.tsx
     globals.css
@@ -58,6 +60,7 @@ src/
       infinite-results-client.tsx
       product-actions.tsx
       product-result-row.tsx
+      search-results-loading.tsx
       search-results-shell.tsx
   data/
     products.ts

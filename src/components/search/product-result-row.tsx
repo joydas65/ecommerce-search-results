@@ -27,6 +27,9 @@ export function ProductResultRow({
   imagePriority?: boolean;
 }) {
   const discount = getDiscount(product);
+  const imageLoadingProps = imagePriority
+    ? { priority: true }
+    : { loading: "lazy" as const };
   const highlights = Array.from(
     new Set([
       product.inStock ? "In stock" : "Restocking soon",
@@ -36,7 +39,7 @@ export function ProductResultRow({
   );
 
   return (
-    <article className="grid gap-4 border-t border-zinc-100 bg-white p-4 transition hover:shadow-md md:grid-cols-[180px_minmax(0,1fr)_220px]">
+    <article className="grid min-h-[220px] gap-4 border-t border-zinc-100 bg-white p-4 transition [contain-intrinsic-size:220px] [content-visibility:auto] hover:shadow-md md:grid-cols-[180px_minmax(0,1fr)_220px]">
       <div className="flex items-start justify-center">
         <div className="relative aspect-[4/3] w-full max-w-[220px] overflow-hidden rounded-sm bg-zinc-50">
           <Image
@@ -45,7 +48,7 @@ export function ProductResultRow({
             fill
             sizes="(max-width: 768px) 60vw, 180px"
             className="object-contain p-3"
-            priority={imagePriority}
+            {...imageLoadingProps}
           />
         </div>
       </div>
