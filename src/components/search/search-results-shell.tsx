@@ -2,6 +2,7 @@ import Link from "next/link";
 import type {
   BrowsingMode,
   ProductCategory,
+  ProductViewMode,
   SearchRequest,
   SearchResponse,
   SortOption,
@@ -12,8 +13,13 @@ import {
   createResetSearchHref,
   createSearchHref,
 } from "@/lib/url-state/search-params";
+import {
+  defaultPageSizeByView,
+  pageSizeOptionsByView,
+  productViewModes,
+} from "@/lib/products/search-config";
 import { InfiniteResultsClient } from "./infinite-results-client";
-import { ProductResultRow } from "./product-result-row";
+import { ProductResultCard, ProductResultRow } from "./product-result-row";
 
 interface SearchResultsShellProps {
   request: SearchRequest;
@@ -42,6 +48,11 @@ const modeLabels: Record<BrowsingMode, string> = {
   infinite: "Infinite feed",
 };
 
+const viewLabels: Record<ProductViewMode, string> = {
+  grid: "Grid",
+  list: "List",
+};
+
 const popularSearches = [
   "mobile",
   "headphones",
@@ -50,7 +61,6 @@ const popularSearches = [
   "desk",
   "kitchen",
 ];
-const fixedPageSizeOptions = [4, 8, 12];
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -144,6 +154,7 @@ function SearchForm({ request }: { request: SearchRequest }) {
       />
       <input type="hidden" name="sort" value={request.sort} />
       <input type="hidden" name="mode" value={request.mode} />
+      <input type="hidden" name="view" value={request.view} />
       <input type="hidden" name="pageSize" value={request.pageSize} />
       {request.mode === "infinite" && (
         <input type="hidden" name="limit" value={request.limit} />
@@ -179,6 +190,7 @@ function FilterFormContent({
       <input type="hidden" name="q" value={request.filters.query} />
       <input type="hidden" name="sort" value={request.sort} />
       <input type="hidden" name="mode" value={request.mode} />
+      <input type="hidden" name="view" value={request.view} />
       <input type="hidden" name="pageSize" value={request.pageSize} />
       {request.mode === "infinite" && (
         <input type="hidden" name="limit" value={request.limit} />
@@ -399,6 +411,10 @@ function ModeSwitch({ request }: { request: SearchRequest }) {
           href={createSearchHref(request, {
             mode,
             page: 1,
+            limit:
+              mode === "infinite"
+                ? defaultPageSizeByView[request.view]
+                : undefined,
             cursor: undefined,
           })}
           className={`px-3 py-2 text-xs font-semibold transition ${
@@ -410,6 +426,36 @@ function ModeSwitch({ request }: { request: SearchRequest }) {
           {modeLabels[mode]}
         </Link>
       ))}
+    </div>
+  );
+}
+
+function ViewSwitch({ request }: { request: SearchRequest }) {
+  return (
+    <div className="flex rounded-sm border border-zinc-200 bg-white">
+      {productViewModes.map((view) => {
+        const pageSize = defaultPageSizeByView[view];
+
+        return (
+          <Link
+            key={view}
+            href={createSearchHref(request, {
+              view,
+              page: 1,
+              pageSize,
+              limit: request.mode === "infinite" ? pageSize : undefined,
+              cursor: undefined,
+            })}
+            className={`px-3 py-2 text-xs font-semibold transition ${
+              request.view === view
+                ? "bg-[#2874f0] text-white"
+                : "text-zinc-600 hover:text-[#2874f0]"
+            }`}
+          >
+            {viewLabels[view]}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -442,7 +488,10 @@ function ResultsHeader({
               Mock backend response in {response.queryTimeMs}ms
             </p>
           </div>
-          <ModeSwitch request={request} />
+          <div className="flex flex-wrap gap-2">
+            <ViewSwitch request={request} />
+            <ModeSwitch request={request} />
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -523,6 +572,7 @@ function ResultsPagination({
   response: SearchResponse;
 }) {
   const pages = Array.from({ length: response.pageCount }, (_, index) => index + 1);
+  const pageSizeOptions = pageSizeOptionsByView[request.view];
 
   return (
     <div className="border-t border-zinc-100 bg-white p-5">
@@ -544,7 +594,7 @@ function ResultsPagination({
           <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
             Per page
           </span>
-          {fixedPageSizeOptions.map((pageSize) => (
+          {pageSizeOptions.map((pageSize) => (
             <Link
               key={pageSize}
               href={createSearchHref(request, {
@@ -614,8 +664,12 @@ export function SearchResultsShell({
   response,
 }: SearchResultsShellProps) {
   const currentResultsHref = createSearchHref(request, {});
+  const isGridView = request.view === "grid";
   const hasQuery = Boolean(request.filters.query);
   const hasAppliedFilters = response.appliedFilterCount > 0;
+  const fixedResultsClassName = isGridView
+    ? "grid grid-cols-1 border-t border-zinc-100 bg-white sm:grid-cols-2 xl:grid-cols-4"
+    : "";
   const emptyStateActions = [
     ...(hasAppliedFilters
       ? [{ href: createClearFiltersHref(request), label: "Clear filters" }]
@@ -629,7 +683,7 @@ export function SearchResultsShell({
   return (
     <main className="min-h-screen bg-[#f1f3f6]">
       <header className="sticky top-0 z-40 bg-[#2874f0] shadow-sm">
-        <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
+        <div className="mx-auto grid max-w-[1600px] gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
           <Link href="/" className="text-xl font-bold tracking-tight text-white">
             BrowseLab
           </Link>
@@ -637,12 +691,12 @@ export function SearchResultsShell({
           <div className="hidden items-center gap-4 text-sm font-semibold text-white md:flex">
             <span>Wishlist</span>
             <span>Compare</span>
-            <span>{modeLabels[request.mode]}</span>
+            <span>{viewLabels[request.view]} {modeLabels[request.mode]}</span>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-3 px-3 py-3 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-[1600px] gap-3 px-3 py-3 lg:grid-cols-[260px_minmax(0,1fr)]">
         <div className="space-y-3">
           <MobileFilters request={request} response={response} />
           <FilterRail request={request} response={response} />
@@ -660,15 +714,24 @@ export function SearchResultsShell({
                 returnToHref={currentResultsHref}
               />
             ) : (
-              <div>
-                {response.products.map((product, index) => (
-                  <ProductResultRow
-                    key={product.id}
-                    product={product}
-                    imagePriority={index === 0 && response.page === 1}
-                    returnToHref={currentResultsHref}
-                  />
-                ))}
+              <div className={fixedResultsClassName}>
+                {response.products.map((product, index) =>
+                  isGridView ? (
+                    <ProductResultCard
+                      key={product.id}
+                      product={product}
+                      imagePriority={index === 0 && response.page === 1}
+                      returnToHref={currentResultsHref}
+                    />
+                  ) : (
+                    <ProductResultRow
+                      key={product.id}
+                      product={product}
+                      imagePriority={index === 0 && response.page === 1}
+                      returnToHref={currentResultsHref}
+                    />
+                  ),
+                )}
               </div>
             )
           ) : (

@@ -2,7 +2,7 @@
 
 BrowseLab is a portfolio-focused ecommerce search results experience built with Next.js, TypeScript, Tailwind CSS, remote real-photo product imagery, and mock backend data.
 
-The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive result rows, fixed pagination, and observer-driven infinite browsing.
+The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive grid and list presentations, fixed pagination, and observer-driven infinite browsing.
 
 ## Current Status
 
@@ -16,23 +16,25 @@ Implemented in this foundation milestone:
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
 - Product detail pages at `/products/[id]` with return-to-results navigation, Walmart-inspired product-detail structure, Flipkart-style visual language, product imagery, offers, highlights, actions, and related results.
-- URL search-param parsing for query, sort, page, page size, mode, and filters.
+- URL search-param parsing for query, sort, page, page size, browsing mode, presentation view, and filters.
 - URL-driven fixed pagination with shareable page numbers, visible page context, and page-size controls.
 - Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
 - Lazy product image loading through `next/image`, with priority reserved for the first visible row.
-- Stable product-row layout with intrinsic row sizing, offscreen rendering optimization, and skeleton rows for route transitions and incremental batches.
+- Responsive marketplace grid as the default discovery layout, with a list view available for comparison-heavy browsing.
+- Stable product row/card layouts with intrinsic sizing, offscreen rendering optimization, and skeleton placeholders for route transitions and incremental batches.
 - Marketplace-style ecommerce search results screen with:
   - Blue utility header with prominent search.
   - Desktop filter panel.
   - Mobile collapsible filter section.
   - Sort controls.
   - Fixed view and infinite feed mode switch.
-  - Product result rows with images, ratings, pricing, delivery cues, and offers.
+  - Grid and list presentation switch backed by the `view` URL parameter.
+  - Product result cards and rows with images, ratings, pricing, delivery cues, and offers.
   - Applied filter chips.
   - Empty state with separate clear-search, clear-filter, and view-all recovery actions.
   - Fixed pagination with URL-backed per-page controls.
   - Infinite loading controls.
-  - Skeleton shell for search/page transitions and skeleton rows while more products load.
+  - Skeleton shell for search/page transitions and matching skeleton cards or rows while more products load.
   - Product detail navigation from each result row.
   - Product detail layout with a thumbnail media rail, center product facts, sticky buy box, purchase options, and delivery choices.
   - Local-storage wishlist toggle.
@@ -78,6 +80,7 @@ src/
   lib/
     products/
       catalog.ts
+      search-config.ts
       search.ts
     url-state/
       search-params.ts
@@ -144,4 +147,9 @@ The main showcase feature is the browsing-mode decision:
 - Fixed view: explicit URL-addressable pagination with a controlled number of visible products and per-page controls.
 - Infinite feed: observer-driven cursor loading for discovery-heavy product exploration, with a manual fallback for accessibility and resilience.
 
-Future work will add responsive page-size rules for fixed view, then protect both browsing modes with unit and Playwright coverage.
+The secondary product decision is presentation mode:
+
+- Grid view: default marketplace discovery layout with 4 columns on desktop and responsive fallback columns on smaller screens.
+- List view: detail-forward comparison layout for shoppers who need richer product facts before opening the product detail page.
+
+Future work will add device-derived page-size rules for fixed view, then protect both browsing and presentation modes with unit and Playwright coverage.

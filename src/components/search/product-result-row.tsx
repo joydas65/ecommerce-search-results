@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Product } from "@/types/product";
 import { ProductActions } from "./product-actions";
 
@@ -18,6 +19,11 @@ const getDiscount = (product: Product) => {
     ((product.originalPrice - product.price) / product.originalPrice) * 100,
   );
 };
+
+const getDetailsHref = (product: Product, returnToHref?: string) =>
+  returnToHref
+    ? `/products/${product.id}?returnTo=${encodeURIComponent(returnToHref)}`
+    : `/products/${product.id}`;
 
 export function ProductResultRow({
   product,
@@ -117,12 +123,121 @@ export function ProductResultRow({
         <div className="w-full md:w-[190px]">
           <ProductActions
             product={product}
-            detailsHref={
-              returnToHref
-                ? `/products/${product.id}?returnTo=${encodeURIComponent(returnToHref)}`
-                : undefined
-            }
+            detailsHref={getDetailsHref(product, returnToHref)}
           />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function ProductResultCard({
+  product,
+  imagePriority = false,
+  returnToHref,
+}: {
+  product: Product;
+  imagePriority?: boolean;
+  returnToHref?: string;
+}) {
+  const discount = getDiscount(product);
+  const imageLoadingProps = imagePriority
+    ? { priority: true }
+    : { loading: "lazy" as const };
+  const detailsHref = getDetailsHref(product, returnToHref);
+
+  return (
+    <article className="group flex min-h-[470px] flex-col border-b border-r border-zinc-100 bg-white p-4 transition [contain-intrinsic-size:470px] [content-visibility:auto] hover:shadow-md">
+      <div className="flex min-h-[250px] flex-col">
+        <div className="flex min-h-7 items-start justify-between gap-2">
+          <div className="flex flex-wrap gap-1">
+            {product.isOnSale && discount && (
+              <span className="rounded-sm bg-[#388e3c] px-2 py-1 text-xs font-semibold text-white">
+                {discount}% off
+              </span>
+            )}
+            {product.badges.slice(0, 1).map((badge) => (
+              <span
+                key={badge}
+                className="rounded-sm bg-[#eff6ff] px-2 py-1 text-xs font-semibold text-[#2874f0]"
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
+          <span className="text-xs font-semibold uppercase text-zinc-400">
+            {product.brand}
+          </span>
+        </div>
+
+        <Link
+          href={detailsHref}
+          className="relative mx-auto mt-3 aspect-square w-full max-w-[230px] overflow-hidden rounded-sm bg-zinc-50"
+        >
+          <Image
+            src={product.image.src}
+            alt={product.image.alt}
+            fill
+            sizes="(max-width: 640px) 46vw, (max-width: 1280px) 28vw, 230px"
+            className="object-contain p-3 transition duration-200 group-hover:scale-[1.03]"
+            {...imageLoadingProps}
+          />
+        </Link>
+      </div>
+
+      <div className="mt-3 flex flex-1 flex-col">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <p className="text-xl font-semibold text-zinc-950">
+              {formatCurrency(product.price)}
+            </p>
+            {product.originalPrice && (
+              <span className="text-sm text-zinc-500 line-through">
+                {formatCurrency(product.originalPrice)}
+              </span>
+            )}
+          </div>
+          <Link
+            href={detailsHref}
+            className="line-clamp-2 text-sm font-medium leading-6 text-zinc-800 transition hover:text-[#2874f0]"
+          >
+            {product.name}
+          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-sm bg-[#388e3c] px-1.5 py-0.5 text-xs font-semibold text-white">
+              {product.rating.toFixed(1)}
+            </span>
+            <span className="text-xs text-zinc-500">
+              {product.reviewCount.toLocaleString()} ratings
+            </span>
+          </div>
+        </div>
+
+        <p className="mt-3 line-clamp-2 text-xs leading-5 text-zinc-500">
+          {product.description}
+        </p>
+
+        <div className="mt-3 flex min-h-6 flex-wrap items-center gap-1">
+          {product.colors.slice(0, 4).map((color) => (
+            <span
+              key={color}
+              className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500"
+            >
+              {color}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-auto space-y-3 pt-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-medium text-[#388e3c]">
+              {product.freeShipping ? "Free delivery" : "Delivery calculated"}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {product.inStock ? "In stock" : "Restocking soon"}
+            </p>
+          </div>
+          <ProductActions product={product} detailsHref={detailsHref} />
         </div>
       </div>
     </article>
@@ -158,6 +273,39 @@ export function ProductResultRowSkeleton() {
         <div className="ml-auto h-7 w-20 animate-pulse rounded bg-zinc-100" />
         <div className="ml-auto h-4 w-24 animate-pulse rounded bg-zinc-100" />
         <div className="ml-auto h-9 w-full animate-pulse rounded bg-zinc-100" />
+      </div>
+    </article>
+  );
+}
+
+export function ProductResultCardSkeleton() {
+  return (
+    <article
+      aria-hidden="true"
+      className="flex min-h-[470px] flex-col border-b border-r border-zinc-100 bg-white p-4"
+    >
+      <div className="flex min-h-[250px] flex-col">
+        <div className="flex justify-between gap-2">
+          <div className="h-6 w-20 animate-pulse rounded-sm bg-zinc-100" />
+          <div className="h-4 w-16 animate-pulse rounded bg-zinc-100" />
+        </div>
+        <div className="mx-auto mt-3 aspect-square w-full max-w-[230px] animate-pulse rounded-sm bg-zinc-100" />
+      </div>
+      <div className="mt-3 flex flex-1 flex-col space-y-3">
+        <div className="h-6 w-24 animate-pulse rounded bg-zinc-100" />
+        <div className="space-y-2">
+          <div className="h-4 w-full animate-pulse rounded bg-zinc-100" />
+          <div className="h-4 w-4/5 animate-pulse rounded bg-zinc-100" />
+        </div>
+        <div className="h-5 w-28 animate-pulse rounded bg-zinc-100" />
+        <div className="space-y-2">
+          <div className="h-3 w-full animate-pulse rounded bg-zinc-100" />
+          <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-100" />
+        </div>
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
+          <div className="h-9 animate-pulse rounded-md bg-zinc-100" />
+          <div className="h-9 animate-pulse rounded-md bg-zinc-100" />
+        </div>
       </div>
     </article>
   );

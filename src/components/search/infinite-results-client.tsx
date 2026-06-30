@@ -5,6 +5,8 @@ import type { Product, SearchRequest, SearchResponse } from "@/types/product";
 import { createSearchHref } from "@/lib/url-state/search-params";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import {
+  ProductResultCard,
+  ProductResultCardSkeleton,
   ProductResultRow,
   ProductResultRowSkeleton,
 } from "./product-result-row";
@@ -100,12 +102,20 @@ export function InfiniteResultsClient({
     onIntersect: loadMore,
   });
   const isLoading = isFetching || isPending;
+  const isGridView = request.view === "grid";
+  const resultListClassName = isGridView
+    ? "grid grid-cols-1 border-t border-zinc-100 bg-white sm:grid-cols-2 xl:grid-cols-4"
+    : "";
+  const ProductResult = isGridView ? ProductResultCard : ProductResultRow;
+  const ProductSkeleton = isGridView
+    ? ProductResultCardSkeleton
+    : ProductResultRowSkeleton;
 
   return (
     <>
-      <div aria-busy={isLoading}>
+      <div className={resultListClassName} aria-busy={isLoading}>
         {products.map((product, index) => (
-          <ProductResultRow
+          <ProductResult
             key={product.id}
             product={product}
             imagePriority={index === 0 && latestResponse.cursor === undefined}
@@ -115,9 +125,12 @@ export function InfiniteResultsClient({
       </div>
 
       {isLoading && (
-        <div aria-label="Loading more products">
+        <div
+          className={resultListClassName}
+          aria-label="Loading more products"
+        >
           {Array.from({ length: Math.min(2, latestResponse.limit) }, (_, index) => (
-            <ProductResultRowSkeleton key={index} />
+            <ProductSkeleton key={index} />
           ))}
         </div>
       )}

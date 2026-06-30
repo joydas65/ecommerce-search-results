@@ -1,9 +1,11 @@
 import type {
   BrowsingMode,
+  ProductViewMode,
   ProductCategory,
   SearchRequest,
   SortOption,
 } from "@/types/product";
+import { defaultPageSizeByView } from "@/lib/products/search-config";
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
@@ -61,7 +63,11 @@ export const parseSearchParams = (
 ): SearchRequest => {
   const sort = getFirst(searchParams.sort);
   const mode = getFirst(searchParams.mode);
-  const pageSize = toPositiveInteger(getFirst(searchParams.pageSize), 8);
+  const view = getFirst(searchParams.view) === "list" ? "list" : "grid";
+  const pageSize = toPositiveInteger(
+    getFirst(searchParams.pageSize),
+    defaultPageSizeByView[view],
+  );
   const limit = toPositiveInteger(getFirst(searchParams.limit), pageSize);
 
   return {
@@ -89,6 +95,7 @@ export const parseSearchParams = (
     cursor: toCursor(getFirst(searchParams.cursor)),
     limit,
     mode: mode === "infinite" ? "infinite" : "fixed",
+    view,
   };
 };
 
@@ -97,6 +104,7 @@ type SearchHrefUpdates = Partial<{
   sort: SortOption;
   page: number;
   mode: BrowsingMode;
+  view: ProductViewMode;
   pageSize: number;
   cursor: string | undefined;
   limit: number | undefined;
@@ -118,19 +126,24 @@ export const createSearchHref = (
   const sort = updates.sort ?? request.sort;
   const page = updates.page ?? request.page;
   const mode = updates.mode ?? request.mode;
+  const view = updates.view ?? request.view;
   const pageSize = updates.pageSize ?? request.pageSize;
   const cursor = hasUpdate(updates, "cursor")
     ? updates.cursor
     : request.cursor;
   const limit = updates.limit ?? request.limit;
+  const defaultPageSize = defaultPageSizeByView[view];
 
   if (query) params.set("q", query);
   if (sort !== "relevance") params.set("sort", sort);
   if (page > 1) params.set("page", String(page));
   if (mode !== "fixed") params.set("mode", mode);
-  if (pageSize !== 8) params.set("pageSize", String(pageSize));
+  if (view !== "grid") params.set("view", view);
+  if (pageSize !== defaultPageSize) params.set("pageSize", String(pageSize));
   if (mode === "infinite" && cursor) params.set("cursor", cursor);
-  if (mode === "infinite" && limit !== 8) params.set("limit", String(limit));
+  if (mode === "infinite" && limit !== defaultPageSize) {
+    params.set("limit", String(limit));
+  }
 
   for (const category of request.filters.categories) {
     params.append("category", category);

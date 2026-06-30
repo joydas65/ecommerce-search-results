@@ -1,5 +1,7 @@
 export type BrowsingMode = "fixed" | "infinite";
 
+export type ProductViewMode = "grid" | "list";
+
 export type SortOption =
   | "relevance"
   | "newest"
@@ -70,6 +72,7 @@ export interface SearchRequest {
   cursor?: string;
   limit: number;
   mode: BrowsingMode;
+  view: ProductViewMode;
 }
 
 export interface SearchFacets {

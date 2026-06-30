@@ -1,4 +1,4 @@
-import { ProductResultRowSkeleton } from "./product-result-row";
+import { ProductResultCardSkeleton } from "./product-result-row";
 
 const filterSections = ["Category", "Brand", "Customer Rating", "Price", "Color"];
 
@@ -15,7 +15,7 @@ function Bar({
 function HeaderSkeleton() {
   return (
     <header className="sticky top-0 z-40 bg-[#2874f0] shadow-sm">
-      <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
+      <div className="mx-auto grid max-w-[1600px] gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
         <div className="text-xl font-bold tracking-tight text-white">BrowseLab</div>
         <div className="grid min-w-0 grid-cols-[1fr_auto]">
           <Bar className="h-11 rounded-l-sm bg-white/95" rounded="" />
@@ -70,6 +70,10 @@ function ResultsHeaderSkeleton() {
             <Bar className="h-3 w-40" />
           </div>
           <div className="flex rounded-sm border border-zinc-200 bg-white">
+            <Bar className="h-9 w-16 rounded-none" />
+            <Bar className="h-9 w-16 rounded-none border-l border-zinc-200" />
+          </div>
+          <div className="flex rounded-sm border border-zinc-200 bg-white">
             <Bar className="h-9 w-24 rounded-none" />
             <Bar className="h-9 w-28 rounded-none border-l border-zinc-200" />
           </div>
@@ -98,7 +102,7 @@ export function SearchResultsLoading() {
   return (
     <main className="min-h-screen bg-[#f1f3f6]" aria-label="Loading product results">
       <HeaderSkeleton />
-      <div className="mx-auto grid max-w-7xl gap-3 px-3 py-3 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-[1600px] gap-3 px-3 py-3 lg:grid-cols-[260px_minmax(0,1fr)]">
         <div className="space-y-3">
           <div className="bg-white p-4 shadow-sm lg:hidden">
             <Bar className="h-5 w-44" />
@@ -107,9 +111,11 @@ export function SearchResultsLoading() {
         </div>
         <section className="min-w-0 shadow-sm">
           <ResultsHeaderSkeleton />
-          {Array.from({ length: 6 }, (_, index) => (
-            <ProductResultRowSkeleton key={index} />
-          ))}
+          <div className="grid grid-cols-1 border-t border-zinc-100 bg-white sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 8 }, (_, index) => (
+              <ProductResultCardSkeleton key={index} />
+            ))}
+          </div>
         </section>
       </div>
     </main>
