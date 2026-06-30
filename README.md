@@ -15,7 +15,7 @@ Implemented in this foundation milestone:
 - Typed product, filter, sort, browsing-mode, facet, request, and response contracts.
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
-- Product detail pages at `/products/[id]` with return-to-results navigation, product imagery, offers, highlights, actions, and related results.
+- Product detail pages at `/products/[id]` with return-to-results navigation, Walmart-inspired product-detail structure, Flipkart-style visual language, product imagery, offers, highlights, actions, and related results.
 - URL search-param parsing for query, sort, page, page size, mode, and filters.
 - URL-driven fixed pagination with shareable page numbers, visible page context, and page-size controls.
 - Client infinite feed that uses `IntersectionObserver`, appends cursor batches, and keeps an accessible "Load more" fallback.
@@ -34,6 +34,7 @@ Implemented in this foundation milestone:
   - Infinite loading controls.
   - Skeleton shell for search/page transitions and skeleton rows while more products load.
   - Product detail navigation from each result row.
+  - Product detail layout with a thumbnail media rail, center product facts, sticky buy box, purchase options, and delivery choices.
   - Local-storage wishlist toggle.
 
 Not implemented yet:

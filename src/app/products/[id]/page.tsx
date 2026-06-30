@@ -9,6 +9,7 @@ import {
   getProductIds,
   getRelatedProducts,
 } from "@/lib/products/catalog";
+import type { Product } from "@/types/product";
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -17,12 +18,32 @@ interface ProductPageProps {
 
 export const dynamicParams = false;
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
+const secondaryNavItems = [
+  "Departments",
+  "Deals",
+  "New arrivals",
+  "Best sellers",
+  "Mobiles",
+  "Home",
+  "Fashion",
+  "Grocery",
+  "Plus offers",
+];
+
+const colorSwatchClassNames: Record<string, string> = {
+  Black: "bg-zinc-950",
+  Blue: "bg-blue-600",
+  Coral: "bg-orange-400",
+  Cream: "bg-yellow-100",
+  Gray: "bg-zinc-400",
+  Indigo: "bg-indigo-600",
+  Navy: "bg-blue-950",
+  Olive: "bg-lime-800",
+  Sage: "bg-emerald-200",
+  Silver: "bg-zinc-300",
+  Tan: "bg-amber-200",
+  White: "bg-white",
+};
 
 const getFirst = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
@@ -36,6 +57,23 @@ const getDiscount = (price: number, originalPrice: number | undefined) => {
   }
 
   return Math.round(((originalPrice - price) / originalPrice) * 100);
+};
+
+const getFeatureBullets = (product: Product, highlights: string[]) => {
+  const keywordSummary = product.keywords.slice(0, 3).join(", ");
+
+  return [
+    product.description,
+    `Popular for ${keywordSummary}.`,
+    `${product.reviewCount.toLocaleString()} customer ratings with ${product.rating.toFixed(1)} stars.`,
+    ...highlights.slice(0, 4),
+  ];
+};
+
+const getMomentumLabel = (product: Product) => {
+  const roundedViews = Math.max(100, Math.floor(product.reviewCount / 50) * 50);
+
+  return `${roundedViews}+ viewed since yesterday`;
 };
 
 export function generateStaticParams() {
@@ -81,11 +119,13 @@ export default async function ProductPage({
       ...product.badges,
     ]),
   );
+  const featureBullets = getFeatureBullets(product, highlights);
+  const galleryTiles = ["Main", "Detail", "In use", "+3"];
 
   return (
     <main className="min-h-screen bg-[#f1f3f6]">
       <header className="sticky top-0 z-40 bg-[#2874f0] shadow-sm">
-        <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
+        <div className="mx-auto grid max-w-[1500px] gap-3 px-4 py-3 md:grid-cols-[160px_minmax(0,1fr)_auto] md:items-center">
           <Link href="/" className="text-xl font-bold tracking-tight text-white">
             BrowseLab
           </Link>
@@ -114,7 +154,21 @@ export default async function ProductPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-3 py-3">
+      <nav className="bg-white shadow-sm" aria-label="Featured departments">
+        <div className="mx-auto flex max-w-[1500px] gap-2 overflow-x-auto px-3 py-2">
+          {secondaryNavItems.map((item) => (
+            <Link
+              key={item}
+              href="/"
+              className="shrink-0 rounded-full bg-[#eff6ff] px-4 py-2 text-xs font-semibold text-[#1f5fc5] transition hover:bg-[#dbeafe]"
+            >
+              {item}
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      <div className="mx-auto max-w-[1500px] px-3 py-3">
         <nav className="mb-3 text-sm">
           <Link
             href={returnToHref}
@@ -126,27 +180,73 @@ export default async function ProductPage({
           <span className="text-zinc-500">{product.category}</span>
         </nav>
 
-        <section className="grid gap-3 lg:grid-cols-[430px_minmax(0,1fr)]">
-          <div className="bg-white p-4 shadow-sm">
-            <div className="sticky top-[76px] space-y-4">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-sm border border-zinc-100 bg-zinc-50">
+        <section className="grid gap-3 lg:grid-cols-[minmax(360px,520px)_minmax(0,1fr)] xl:grid-cols-[minmax(420px,560px)_minmax(0,1fr)_340px]">
+          <section className="bg-white p-4 shadow-sm">
+            <div className="sticky top-[132px] grid gap-4 sm:grid-cols-[76px_minmax(0,1fr)]">
+              <div className="flex gap-2 overflow-x-auto sm:flex-col">
+                {galleryTiles.map((label, index) => (
+                  <div
+                    key={label}
+                    className={`grid h-20 w-20 shrink-0 place-items-center rounded-sm border bg-white p-1 text-center text-[11px] font-semibold ${
+                      index === 0
+                        ? "border-[#2874f0] text-[#2874f0]"
+                        : "border-zinc-200 text-zinc-500"
+                    }`}
+                  >
+                    {index < 3 ? (
+                      <span className="relative block h-12 w-12">
+                        <Image
+                          src={product.image.src}
+                          alt=""
+                          fill
+                          sizes="48px"
+                          className="object-contain"
+                        />
+                      </span>
+                    ) : (
+                      <span className="text-lg text-zinc-950">{label}</span>
+                    )}
+                    <span>{index < 3 ? label : "More"}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative min-h-[430px] overflow-hidden rounded-sm border border-zinc-100 bg-zinc-50 lg:min-h-[560px]">
+                <div className="absolute right-3 top-3 z-10 grid gap-2">
+                  {["Share", "Save", "Zoom"].map((action) => (
+                    <span
+                      key={action}
+                      className="grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white text-[10px] font-semibold text-zinc-600 shadow-sm"
+                    >
+                      {action}
+                    </span>
+                  ))}
+                </div>
                 <Image
                   src={product.image.src}
                   alt={product.image.alt}
                   fill
-                  sizes="(max-width: 1024px) 90vw, 430px"
-                  className="object-contain p-8"
+                  sizes="(max-width: 1024px) 90vw, 560px"
+                  className="object-contain p-8 lg:p-12"
                   priority
                 />
               </div>
-              <ProductDetailActions product={product} />
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-3">
+          <section className="space-y-3">
             <section className="bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase text-zinc-400">
-                {product.brand}
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-sm border border-[#2874f0] px-2 py-1 text-xs font-semibold text-[#2874f0]">
+                  {getMomentumLabel(product)}
+                </span>
+                <span className="rounded-sm bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
+                  Overall pick
+                </span>
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase text-zinc-400">
+                Visit the {product.brand} store
               </p>
               <h1 className="mt-2 text-2xl font-semibold leading-tight text-zinc-950">
                 {product.name}
@@ -161,25 +261,56 @@ export default async function ProductPage({
                 <span className="text-sm text-zinc-400">| {product.category}</span>
               </div>
 
-              <div className="mt-5 flex flex-wrap items-end gap-3">
-                <p className="text-3xl font-semibold text-zinc-950">
-                  {formatCurrency(product.price)}
-                </p>
-                {product.originalPrice && (
-                  <p className="pb-1 text-base text-zinc-500 line-through">
-                    {formatCurrency(product.originalPrice)}
+              <div className="mt-5 border-t border-zinc-100 pt-5">
+                <div>
+                  <p className="text-sm font-semibold text-zinc-950">
+                    Size:{" "}
+                    <span className="font-medium text-zinc-600">
+                      {product.sizes[0]}
+                    </span>
                   </p>
-                )}
-                {discount && (
-                  <p className="pb-1 text-base font-semibold text-[#388e3c]">
-                    {discount}% off
-                  </p>
-                )}
-              </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.sizes.map((size, index) => (
+                      <span
+                        key={size}
+                        className={`rounded-sm border px-4 py-3 text-sm font-semibold ${
+                          index === 0
+                            ? "border-zinc-950 text-zinc-950"
+                            : "border-zinc-200 text-zinc-600"
+                        }`}
+                      >
+                        {size}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-600">
-                {product.description}
-              </p>
+                <div className="mt-5">
+                  <p className="text-sm font-semibold text-zinc-950">
+                    Color:{" "}
+                    <span className="font-medium text-zinc-600">
+                      {product.colors[0]}
+                    </span>
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.colors.map((color, index) => (
+                      <span
+                        key={color}
+                        className={`flex items-center gap-2 rounded-sm border px-3 py-2 text-sm font-medium ${
+                          index === 0
+                            ? "border-[#2874f0] text-[#2874f0]"
+                            : "border-zinc-200 text-zinc-600"
+                        }`}
+                      >
+                        <span
+                          className={`h-4 w-4 rounded-full border border-zinc-200 ${colorSwatchClassNames[color] ?? "bg-zinc-200"}`}
+                        />
+                        {color}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </section>
 
             <section className="bg-white p-5 shadow-sm">
@@ -208,23 +339,38 @@ export default async function ProductPage({
 
             <section className="bg-white p-5 shadow-sm">
               <h2 className="text-base font-semibold text-zinc-950">
-                Highlights
+                Key item features
               </h2>
-              <ul className="mt-4 grid gap-2 text-sm text-zinc-600 sm:grid-cols-2">
-                {highlights.map((highlight) => (
-                  <li key={highlight} className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                    <span>{highlight}</span>
-                  </li>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-700">
+                {featureBullets.map((feature) => (
+                  <li key={feature}>{feature}</li>
                 ))}
               </ul>
+              <Link
+                href="#product-details"
+                className="mt-3 inline-flex text-sm font-semibold text-[#2874f0] transition hover:text-[#1f5fc5]"
+              >
+                View all item details
+              </Link>
             </section>
 
-            <section className="bg-white p-5 shadow-sm">
+            <section id="product-details" className="bg-white p-5 shadow-sm">
               <h2 className="text-base font-semibold text-zinc-950">
                 Product details
               </h2>
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-zinc-500">Brand</dt>
+                  <dd className="mt-1 font-medium text-zinc-950">
+                    {product.brand}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">Category</dt>
+                  <dd className="mt-1 font-medium text-zinc-950">
+                    {product.category}
+                  </dd>
+                </div>
                 <div>
                   <dt className="text-zinc-500">Colors</dt>
                   <dd className="mt-1 font-medium text-zinc-950">
@@ -250,8 +396,15 @@ export default async function ProductPage({
                   </dd>
                 </div>
               </dl>
+              {discount && (
+                <p className="mt-4 text-sm font-semibold text-[#388e3c]">
+                  Current catalog discount: {discount}% off.
+                </p>
+              )}
             </section>
-          </div>
+          </section>
+
+          <ProductDetailActions product={product} />
         </section>
 
         {relatedProducts.length > 0 && (
