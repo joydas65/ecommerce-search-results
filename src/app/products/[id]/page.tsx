@@ -33,6 +33,7 @@ const secondaryNavItems = [
 const colorSwatchClassNames: Record<string, string> = {
   Black: "bg-zinc-950",
   Blue: "bg-blue-600",
+  Clear: "bg-sky-50",
   Coral: "bg-orange-400",
   Cream: "bg-yellow-100",
   Gray: "bg-zinc-400",

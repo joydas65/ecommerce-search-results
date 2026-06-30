@@ -1,6 +1,6 @@
 # BrowseLab Ecommerce Search Results
 
-BrowseLab is a portfolio-focused ecommerce search results experience built with Next.js, TypeScript, Tailwind CSS, local dummy product images, and mock backend data.
+BrowseLab is a portfolio-focused ecommerce search results experience built with Next.js, TypeScript, Tailwind CSS, remote real-photo product imagery, and mock backend data.
 
 The goal is to demonstrate a polished marketplace-style product surface: URL-driven search state, advanced filtering, sorting, responsive result rows, fixed pagination, and observer-driven infinite browsing.
 
@@ -10,8 +10,8 @@ Implemented in this foundation milestone:
 
 - Next.js App Router project with TypeScript and Tailwind CSS.
 - Project-specific metadata and visual system.
-- Mock product fixtures in a dedicated data module.
-- Dummy product image assets in `public/product-images`.
+- Mock product fixtures in a dedicated data module, expanded to 48 products for realistic infinite browsing.
+- Remote real-photo product imagery from `images.unsplash.com`, configured through `next.config.ts`.
 - Typed product, filter, sort, browsing-mode, facet, request, and response contracts.
 - Search service that matches product text, catalog keywords, and common synonyms, then filters, sorts, paginates, builds facets, and returns backend-like metadata.
 - Cursor-style mock backend route at `/api/products` with `cursor`, `limit`, `hasNextPage`, and `nextCursor` response metadata.
@@ -48,8 +48,7 @@ Not implemented yet:
 ## Architecture
 
 ```txt
-public/
-  product-images/
+next.config.ts
 src/
   app/
     (search)/
@@ -94,11 +93,13 @@ The UI consumes a typed `SearchResponse` rather than reading product arrays dire
 
 The current backend is intentionally mocked, but it behaves like an API contract:
 
-- `src/data/products.ts` owns product fixtures.
+- `src/data/products.ts` owns 48 product fixtures and real-photo image metadata.
 - `src/lib/products/catalog.ts` owns product-detail lookup and related-product selection.
 - `src/lib/products/search.ts` owns keyword matching, synonym expansion, filtering, sorting, facet generation, pagination, and response metadata.
 - `src/app/api/products/route.ts` exposes the same typed search contract through a mock API endpoint for client-side infinite loading.
 - UI components receive request/response objects and do not own product search logic.
+
+`next.config.ts` allowlists `images.unsplash.com` for product photos. The app still uses mock product data; only the imagery is photo-based.
 
 ## Local Development
 

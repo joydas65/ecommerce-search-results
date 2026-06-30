@@ -42,7 +42,14 @@ const modeLabels: Record<BrowsingMode, string> = {
   infinite: "Infinite feed",
 };
 
-const popularSearches = ["mobile", "headphones", "shoes", "backpack"];
+const popularSearches = [
+  "mobile",
+  "headphones",
+  "sneakers",
+  "backpack",
+  "desk",
+  "kitchen",
+];
 const fixedPageSizeOptions = [4, 8, 12];
 
 const formatCurrency = (amount: number) =>

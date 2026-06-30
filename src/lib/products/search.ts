@@ -11,11 +11,25 @@ const contains = (value: string, query: string) =>
   value.toLowerCase().includes(query.toLowerCase());
 
 const querySynonyms: Record<string, string[]> = {
-  mobile: ["mobile accessory", "smartwatch", "fitness band", "bluetooth"],
-  phone: ["mobile accessory", "bluetooth", "portable"],
+  bag: ["backpack", "duffel", "tote", "travel bag"],
+  bags: ["backpack", "duffel", "tote", "travel bag"],
+  chair: ["office chair", "ergonomic", "work from home"],
+  coffee: ["coffee grinder", "kettle", "brew", "kitchen"],
+  desk: ["office", "monitor stand", "lamp", "keyboard", "work from home"],
+  fitness: ["fitness watch", "fitness band", "wearable", "health"],
+  kitchen: ["cookware", "kettle", "appliance", "coffee", "cooking"],
   laptop: ["laptop bag", "monitor stand", "office"],
+  mobile: ["mobile accessory", "smartwatch", "fitness band", "bluetooth"],
+  office: ["desk", "work from home", "chair", "keyboard"],
+  phone: ["mobile accessory", "bluetooth", "portable"],
+  sneaker: ["shoes", "sneakers", "footwear"],
+  sneakers: ["shoes", "running", "footwear"],
   shoe: ["shoes", "sneakers", "footwear"],
   shoes: ["sneakers", "running", "footwear"],
+  speaker: ["bluetooth speaker", "wireless", "audio"],
+  speakers: ["bluetooth speaker", "wireless", "audio"],
+  travel: ["backpack", "duffel", "sling bag", "luggage"],
+  watch: ["smartwatch", "fitness watch", "wearable"],
   headphone: ["headphones", "wireless", "bluetooth"],
   headphones: ["headphones", "wireless", "bluetooth"],
 };
